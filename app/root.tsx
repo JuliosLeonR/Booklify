@@ -40,10 +40,13 @@ export const loader: LoaderFunction = async ({ request }) => {
   const token = cookies.token;
 
   let user = null;
+  let isAuthenticated = false;
+
   if (token) {
     try {
       const authData = await requireAuth(request);
       user = authData.user;
+      isAuthenticated = true;
       console.log("User data fetched:", user);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -52,7 +55,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.log("No token found");
   }
 
-  return json<LoaderData>({ isAuthenticated: !!token, user });
+  return json<LoaderData>({ isAuthenticated, user });
 };
 
 function Notification() {
@@ -69,7 +72,9 @@ function Notification() {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useLoaderData<LoaderData>();
+  const loaderData = useLoaderData<LoaderData>();
+  const isAuthenticated = loaderData?.isAuthenticated ?? false;
+  const user = loaderData?.user ?? null;
 
   console.log("Loader data:", { isAuthenticated, user });
 

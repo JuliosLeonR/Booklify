@@ -2,8 +2,9 @@ import { useLoaderData, Form, useActionData, redirect } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
+import { parse } from "cookie";
 import { useNotification } from "~/context/NotificationContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 type LoaderData = {
     user: {
@@ -12,7 +13,6 @@ type LoaderData = {
         name: string;
         email: string;
         username: string;
-        //bio: string;
     };
 };
 
@@ -28,48 +28,77 @@ export const action: ActionFunction = async ({ request }) => {
     const email = formData.get("email");
     const username = formData.get("username");
     const password = formData.get("password");
-    //const bio = formData.get("bio");
-    const profile_picture = formData.get("profile_picture");
+    //const profile_picture = formData.get("profile_picture");
 
-    const response = await fetch(`http://localhost/api/users/${id}`, {
-        method: "PUT",
-        headers: {
-            Authorization: `Bearer ${request.headers.get("Authorization")}`,
-        },
-        body: formData,
-    });
+    const cookieHeader = request.headers.get("Cookie");
+    const cookies = cookieHeader ? parse(cookieHeader) : {};
+    const token = cookies.token;
 
-    if (!response.ok) {
-        const errors = await response.json();
-        return { errors };
+    if (!token) {
+        throw new Error("Authorization token is missing");
     }
 
-    return redirect("/profile");
+    const saveToDb: any = {};
+    if (name) saveToDb.name = name;
+    if (email) saveToDb.email = email;
+    if (username) saveToDb.username = username;
+    if (password) saveToDb.password = password;
+    //if (profile_picture) saveToDb.profile_picture = profile_picture;
+
+    try {
+        const response = await fetch(`http://localhost/api/users/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(saveToDb),
+        });
+
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
+
+        const result = await response.json();
+        return json({ success: "Profile updated successfully", user: result.user });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        return json({ errors: "An unexpected error occurred" }, { status: 500 });
+    }
 };
 
 export default function Profile() {
-    const { user } = useLoaderData<LoaderData>();
+    const { user } = useLoaderData<{ user: LoaderData["user"] }>();
     const actionData = useActionData();
     const { setNotification } = useNotification();
+    const [serverResponse, setServerResponse] = useState<string | null>(null);
 
     useEffect(() => {
         if (actionData?.errors) {
             setNotification({ message: "Update failed", type: "error" });
-        } else if (actionData) {
-            setNotification({ message: "Profile updated successfully", type: "success" });
+            setServerResponse(actionData.errors);
+        } else if (actionData?.success) {
+            setNotification({ message: actionData.success, type: "success" });
+            setServerResponse(null);
         }
     }, [actionData, setNotification]);
 
     return (
-        <div className="min-h-screen bg-gray-100 py-10 px-5 sm:px-10 mt-4">
-            <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
                 <div className="p-6 sm:p-10">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h2>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Edit Profile</h2>
+                    {serverResponse && (
+                        <div className="mb-4 text-red-500">
+                            {typeof serverResponse === "string" ? serverResponse : JSON.stringify(serverResponse)}
+                        </div>
+                    )}
                     <Form method="post" encType="multipart/form-data">
                         <input type="hidden" name="id" value={user.id} />
                         {/* Profile Picture */}
                         <div className="flex items-center mb-6">
-                            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200">
+                            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
                                 <img
                                     id="profilePreview"
                                     src={`http://localhost/storage/${user.profile_picture}`}
@@ -80,7 +109,7 @@ export default function Profile() {
                                     htmlFor="profile_picture"
                                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 cursor-pointer transition duration-150 z-10"
                                 >
-                                    <span className="text-sm font-medium text-gray-800">Edit</span>
+                                    <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Edit</span>
                                 </label>
                                 <input
                                     id="profile_picture"
@@ -105,14 +134,14 @@ export default function Profile() {
 
                         {/* Name */}
                         <div className="mb-4 mt-4">
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Name
                             </label>
                             <input
                                 type="text"
                                 id="name"
                                 name="name"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Enter your name"
                                 defaultValue={user.name}
                             />
@@ -120,14 +149,14 @@ export default function Profile() {
 
                         {/* Email */}
                         <div className="mb-4">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Email
                             </label>
                             <input
                                 type="email"
                                 id="email"
                                 name="email"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Enter your email"
                                 defaultValue={user.email}
                             />
@@ -135,14 +164,14 @@ export default function Profile() {
 
                         {/* Username */}
                         <div className="mb-4">
-                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Username
                             </label>
                             <input
                                 type="text"
                                 id="username"
                                 name="username"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Enter your username"
                                 defaultValue={user.username}
                             />
@@ -150,51 +179,23 @@ export default function Profile() {
 
                         {/* Password */}
                         <div className="mb-4">
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                 Password
                             </label>
                             <input
                                 type="password"
                                 id="password"
                                 name="password"
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                 placeholder="Enter new password"
                             />
-                        </div>
-
-                        {/* Bio */}
-                        <div className="mb-4">
-                            <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-                                Bio
-                            </label>
-                            <textarea
-                                id="bio"
-                                name="bio"
-                                rows={4}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Write your bio here..."
-                                defaultValue={user.bio}
-                            ></textarea>
                         </div>
 
                         {/* Save Button */}
                         <div className="text-right">
                             <button
                                 type="submit"
-                                style={{
-                                    backgroundColor: '#1D4ED8',
-                                    color: '#FFFFFF',
-                                    padding: '0.75rem 1.5rem',
-                                    fontWeight: 'bold',
-                                    borderRadius: '0.5rem',
-                                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-                                    transition: 'background-color 0.15s ease-in-out',
-                                    outline: 'none',
-                                    border: 'none',
-                                    cursor: 'pointer'
-                                }}
-                                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#2563EB')}
-                                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1D4ED8')}
+                                className="bg-blue-600 text-white px-4 py-2 font-bold rounded-lg shadow-md transition duration-150 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                                 Save Changes
                             </button>
