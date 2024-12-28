@@ -35,7 +35,7 @@ export const action: ActionFunction = async ({ request }) => {
     const token = cookies.token;
 
     if (!token) {
-        throw new Error("Authorization token is missing");
+        return json({ errors: "Authorization token is missing" }, { status: 401 });
     }
 
     const saveToDb: any = {};
@@ -43,7 +43,7 @@ export const action: ActionFunction = async ({ request }) => {
     if (email) saveToDb.email = email;
     if (username) saveToDb.username = username;
     if (password) saveToDb.password = password;
-    //if (profile_picture) saveToDb.profile_picture = profile_picture;
+
 
     try {
         const response = await fetch(`http://localhost/api/users/${id}`, {
@@ -83,6 +83,43 @@ export default function Profile() {
             setServerResponse(null);
         }
     }, [actionData, setNotification]);
+
+    const handleImageUpdate = async () => {
+        const form = document.getElementById("profileTestForm") as HTMLFormElement;
+        
+        if (!form) {
+            console.error("Form not found");
+            return;
+        }
+    
+        const formData = new FormData(form);
+        const token = "23|ziQTrIVYiANzXDC5QG4AibMSs9aJqe4btwbhxezSad4494b0";
+        if (!token) {
+            console.error("Authorization token is missing");
+            return;
+        }
+    
+        try {
+            const response = await fetch("http://localhost/api/users/2", {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData, // Usamos el FormData para enviar el archivo y otros datos si es necesario
+            });
+    
+            if (!response.ok) {
+                const errors = await response.json();
+                console.error("Error response from server:", errors);
+            } else {
+                const result = await response.json();
+                console.log("Profile test file uploaded successfully:", result);
+            }
+        } catch (error) {
+            console.error("Error uploading profile test file:", error);
+        }
+    };
+    
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
