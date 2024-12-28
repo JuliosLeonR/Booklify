@@ -14,11 +14,16 @@ type LoaderData = {
         email: string;
         username: string;
     };
+    token: string;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
     const { user } = await requireAuth(request);
-    return json<LoaderData>({ user });
+
+    const cookieHeader = request.headers.get("Cookie");
+    const cookies = cookieHeader ? parse(cookieHeader) : {};
+    const token = cookies.token;
+    return json<LoaderData>({ user, token });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -28,7 +33,6 @@ export const action: ActionFunction = async ({ request }) => {
     const email = formData.get("email");
     const username = formData.get("username");
     const password = formData.get("password");
-    //const profile_picture = formData.get("profile_picture");
 
     const cookieHeader = request.headers.get("Cookie");
     const cookies = cookieHeader ? parse(cookieHeader) : {};
@@ -43,7 +47,6 @@ export const action: ActionFunction = async ({ request }) => {
     if (email) saveToDb.email = email;
     if (username) saveToDb.username = username;
     if (password) saveToDb.password = password;
-
 
     try {
         const response = await fetch(`http://localhost/api/users/${id}`, {
@@ -69,7 +72,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function Profile() {
-    const { user } = useLoaderData<{ user: LoaderData["user"] }>();
+    const { user, token } = useLoaderData<{ user: LoaderData["user"]; token: string }>();
     const actionData = useActionData();
     const { setNotification } = useNotification();
     const [serverResponse, setServerResponse] = useState<string | null>(null);
@@ -84,42 +87,46 @@ export default function Profile() {
         }
     }, [actionData, setNotification]);
 
+
+
     const handleImageUpdate = async () => {
-        const form = document.getElementById("profileTestForm") as HTMLFormElement;
-        
-        if (!form) {
-            console.error("Form not found");
+        const fileInput = document.getElementById("profile_picture") as HTMLInputElement;
+        if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
             return;
         }
-    
-        const formData = new FormData(form);
-        const token = "23|ziQTrIVYiANzXDC5QG4AibMSs9aJqe4btwbhxezSad4494b0";
+
+        //const token = "28|RFWEUlRqiZVpUVo1C2kJLYo0pfxxlV7CniQPzWyD12e08e72";
+
         if (!token) {
-            console.error("Authorization token is missing");
+            setNotification({ message: "Authorization token is missing", type: "error" });
             return;
         }
-    
+
+        const formData = new FormData();
+        formData.append("profile_picture", fileInput.files[0]);
+
         try {
-            const response = await fetch("http://localhost/api/users/2", {
-                method: "PUT",
+            const response = await fetch(`http://localhost/api/users/${user.id}/update-profile-picture`, {
+                method: "POST",
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    'Authorization': `Bearer ${token}`
                 },
-                body: formData, // Usamos el FormData para enviar el archivo y otros datos si es necesario
+                body: formData
             });
-    
+
             if (!response.ok) {
-                const errors = await response.json();
-                console.error("Error response from server:", errors);
-            } else {
-                const result = await response.json();
-                console.log("Profile test file uploaded successfully:", result);
+                throw new Error('Error updating profile picture');
             }
+
+            await response.json();
+            setNotification({ message: "Profile picture updated successfully", type: "success" });
+
         } catch (error) {
-            console.error("Error uploading profile test file:", error);
+            setNotification({ message: "Error updating profile picture", type: "error" });
+            throw new Error(String(error));
+
         }
     };
-    
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
@@ -163,6 +170,7 @@ export default function Profile() {
                                         };
                                         if (input.files && input.files[0]) {
                                             reader.readAsDataURL(input.files[0]);
+                                            handleImageUpdate(); // Llamar a la función para actualizar la imagen
                                         }
                                     }}
                                 />
