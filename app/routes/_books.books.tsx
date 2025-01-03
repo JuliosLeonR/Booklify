@@ -3,7 +3,6 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
-import Navbar from "~/components/Navbar";
 
 type Book = {
     id: number;
@@ -11,6 +10,9 @@ type Book = {
     author: string;
     cover_image: string;
     description: string;
+    genre: {
+        name: string;
+    };
     user: {
         name: string;
         profile_picture: string;
@@ -55,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
         throw new Error("Failed to fetch books");
     }
 
-    const data = await response.json();
+    const data = await response.json();    
     const books: Book[] = data.books;
     const totalPages = data.totalPages;
 
@@ -63,7 +65,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Books() {
-    const { user, books, totalPages, currentPage } = useLoaderData<LoaderData>();
+    const {books, totalPages, currentPage } = useLoaderData<LoaderData>();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const handlePageChange = (page: number) => {
@@ -81,12 +83,17 @@ export default function Books() {
                         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
                             {books.map((book) => (
                                 <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4">
-                                    <img src={book.cover_image} alt={book.title} className="w-full h-48 object-cover rounded-md" />
+                                    <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-48 object-cover rounded-md" />
                                     <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                                     <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>
+                                    <p className="text-gray-600 dark:text-gray-300">Genre: {book.genre.name}</p>
                                     <p className="mt-2 text-gray-800 dark:text-gray-100">{book.description}</p>
                                     <div className="mt-4 flex items-center">
-                                        <img src={book.user.profile_picture} alt={book.user.name} className="w-10 h-10 rounded-full" />
+                                        <img
+                                            src={`http://localhost/storage/${book.user.profile_picture}`}
+                                            alt={book.user.name}
+                                            className="w-10 h-10 rounded-full"
+                                        />
                                         <p className="ml-2 text-gray-800 dark:text-gray-100">{book.user.name}</p>
                                     </div>
                                     <p className="mt-2 text-gray-600 dark:text-gray-300">
