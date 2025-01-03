@@ -18,6 +18,9 @@ export default function Navbar({ user }: { user: User }) {
                 <Link to="/books" className="text-white text-lg font-semibold mr-4">
                     Books
                 </Link>
+                <Link to="/add-book" className="text-white text-lg font-semibold mr-4">
+                    Add a Book
+                </Link>
                 <div className="relative">
                     <button onClick={() => setIsOpen(!isOpen)} className="flex items-center focus:outline-none">
                         <img
