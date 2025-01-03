@@ -11,6 +11,15 @@ type Book = {
     author: string;
     cover_image: string;
     description: string;
+    genre: {
+        id: number;
+        name: string;
+    };
+};
+
+type Genre = {
+    id: number;
+    name: string;
 };
 
 type LoaderData = {
@@ -23,6 +32,7 @@ type LoaderData = {
     };
     token: string;
     books: Book[];
+    genres: Genre[];
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -32,20 +42,29 @@ export const loader: LoaderFunction = async ({ request }) => {
     const cookies = cookieHeader ? parse(cookieHeader) : {};
     const token = cookies.token;
 
-    const response = await fetch(`http://localhost/api/user-books`, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-    });
+    const [booksResponse, genresResponse] = await Promise.all([
+        fetch(`http://localhost/api/user-books`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }),
+        fetch(`http://localhost/api/genres`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }),
+    ]);
 
-    if (!response.ok) {
-        throw new Error("Failed to fetch books");
+    if (!booksResponse.ok || !genresResponse.ok) {
+        throw new Error("Failed to fetch data");
     }
 
-    const data = await response.json();
-    const books: Book[] = data.books;
+    const booksData = await booksResponse.json();
+    const genresData = await genresResponse.json();
+    const books: Book[] = booksData.books;
+    const genres: Genre[] = genresData.genres;
 
-    return json<LoaderData>({ user, token, books });
+    return json<LoaderData>({ user, token, books, genres });
 };
 
 export const action: ActionFunction = async ({ request }) => {
@@ -54,6 +73,7 @@ export const action: ActionFunction = async ({ request }) => {
     const title = formData.get("title");
     const author = formData.get("author");
     const description = formData.get("description");
+    const genreId = formData.get("genre_id");
     const coverImage = formData.get("cover_image");
 
     const cookieHeader = request.headers.get("Cookie");
@@ -66,7 +86,7 @@ export const action: ActionFunction = async ({ request }) => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ title, author, description }),
+        body: JSON.stringify({ title, author, description, genre_id: genreId }),
     });
 
     if (!updateResponse.ok) {
@@ -97,7 +117,7 @@ export const action: ActionFunction = async ({ request }) => {
 };
 
 export default function MyBooks() {
-    const { user, books } = useLoaderData<LoaderData>();
+    const { books, genres, token } = useLoaderData<LoaderData>();
     const fetcher = useFetcher();
     const [selectedBook, setSelectedBook] = useState<Book | null>(null);
     const modalRef = useRef<HTMLDivElement>(null);
@@ -107,17 +127,18 @@ export default function MyBooks() {
     };
 
     const handleDelete = async (id: number) => {
-        const response = await fetch(`/api/books/${id}`, {
+
+        const response = await fetch(`http://localhost/api/books/${id}`, {
             method: "DELETE",
             headers: {
-                Authorization: `Bearer ${user.token}`,
+                Authorization: `Bearer ${token}`,
             },
         });
 
         if (response.ok) {
             window.location.reload();
         } else {
-            alert("Failed to delete book");
+            alert(`Failed to delete the book, token: ${token}`);
         }
     };
 
@@ -150,6 +171,7 @@ export default function MyBooks() {
                                 <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full max-h-96 object-cover rounded-md" />
                                 <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                                 <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>
+                                <p className="text-gray-600 dark:text-gray-300">Genre: {book.genre.name}</p>
                                 <p className="mt-2 text-gray-800 dark:text-gray-100">{book.description}</p>
                                 <div className="mt-4 flex justify-between">
                                     <button onClick={() => handleEdit(book)} className="text-blue-500 hover:underline">Edit</button>
@@ -195,6 +217,21 @@ export default function MyBooks() {
                                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     defaultValue={selectedBook.description}
                                 />
+                            </div>
+                            <div>
+                                <label htmlFor="genre_id" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Genre</label>
+                                <select
+                                    id="genre_id"
+                                    name="genre_id"
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    defaultValue={selectedBook.genre.id}
+                                >
+                                    {genres.map((genre) => (
+                                        <option key={genre.id} value={genre.id}>
+                                            {genre.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                             <div>
                                 <label htmlFor="cover_image" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cover Image</label>
