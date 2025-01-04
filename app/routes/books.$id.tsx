@@ -3,6 +3,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
+import { useState } from "react";
 
 type LoaderData = {
     user: {
@@ -102,6 +103,14 @@ export const action: ActionFunction = async ({ request, params }) => {
 export default function ShowBook() {
     const { book } = useLoaderData<LoaderData>();
     const actionData = useActionData();
+    const [showAllComments, setShowAllComments] = useState<{ [key: number]: boolean }>({});
+
+    const toggleShowAllComments = (reviewId: number) => {
+        setShowAllComments((prev) => ({
+            ...prev,
+            [reviewId]: !prev[reviewId],
+        }));
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
@@ -113,7 +122,7 @@ export default function ShowBook() {
                     <p className="text-gray-800 dark:text-gray-100 mb-6">{book.description}</p>
                     <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reviews</h3>
                     {book.reviews.map((review) => (
-                        <div key={review.id} className="mb-6">
+                        <div key={review.id} className="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
                             <div className="flex items-center mb-2">
                                 <img
                                     src={`http://localhost/storage/${review.user.profile_picture}`}
@@ -122,11 +131,11 @@ export default function ShowBook() {
                                 />
                                 <p className="ml-2 text-gray-800 dark:text-gray-100">{review.user.name}</p>
                             </div>
-                            <p className="text-gray-600 dark:text-gray-300 mb-2">Rating: {review.rating}</p>
+                            <p className="text-gray-600 dark:text-gray-300 mb-2">Rating: {review.rating}⭐</p>
                             <p className="text-gray-800 dark:text-gray-100 mb-4">{review.review_text}</p>
                             <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">Comments</h4>
-                            {Array.isArray(review.comments) && review.comments.map((comment) => (
-                                <div key={comment.id} className="mb-4">
+                            {Array.isArray(review.comments) && review.comments.slice(0, showAllComments[review.id] ? review.comments.length : 2).map((comment) => (
+                                <div key={comment.id} className="mb-4 ml-4 p-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
                                     <div className="flex items-center mb-2">
                                         <img
                                             src={`http://localhost/storage/${comment.user.profile_picture}`}
@@ -137,7 +146,7 @@ export default function ShowBook() {
                                     </div>
                                     <p className="text-gray-800 dark:text-gray-100 mb-2">{comment.comment}</p>
                                     {Array.isArray(comment.replies) && comment.replies.map((reply) => (
-                                        <div key={reply.id} className="ml-6 mb-2">
+                                        <div key={reply.id} className="ml-6 mb-2 p-2 bg-gray-300 dark:bg-gray-500 rounded-lg">
                                             <div className="flex items-center mb-2">
                                                 <img
                                                     src={`http://localhost/storage/${reply.user.profile_picture}`}
@@ -151,7 +160,15 @@ export default function ShowBook() {
                                     ))}
                                 </div>
                             ))}
-                            <Form method="post" className="space-y-4">
+                            {review.comments.length > 2 && (
+                                <button
+                                    onClick={() => toggleShowAllComments(review.id)}
+                                    className="text-blue-500 hover:underline"
+                                >
+                                    {showAllComments[review.id] ? "Hide comments" : "See all the comments"}
+                                </button>
+                            )}
+                            <Form method="post" className="space-y-4 mt-4">
                                 <input type="hidden" name="review_id" value={review.id} />
                                 <div>
                                     <label htmlFor="comment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Add a Comment</label>

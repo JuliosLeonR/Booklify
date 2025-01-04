@@ -100,7 +100,7 @@ export default function Books() {
                                         Average Rating: {book.reviews.length > 0 ? (book.reviews.reduce((sum, review) => sum + review.rating, 0) / book.reviews.length).toFixed(1) : "No ratings yet"}
                                     </p>
                                     <div className="mt-4 flex justify-between">
-                                        <Link to={`/books/${book.id}/review`} className="text-blue-500 hover:underline">Make Review</Link>
+                                        <Link to={`/books/make-review/${book.id}`} className="text-blue-500 hover:underline">Make Review</Link>
                                         <Link to={`/books/${book.id}`} className="text-blue-500 hover:underline">Show Book</Link>
                                     </div>
                                 </div>
