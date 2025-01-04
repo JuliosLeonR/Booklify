@@ -82,12 +82,15 @@ export const action: ActionFunction = async ({ request }) => {
     }
 
     const result = await response.json();
+    console.log(result)
 
-    if (coverImage && coverImage instanceof File) {
+    console.log(`Cover Image: ${coverImage}`)
+    if (coverImage && coverImage instanceof File && coverImage.size > 0) {
         const formData = new FormData();
         formData.append("cover_image", coverImage);
+        console.log(`http://localhost/api/books/${result.id}/update-cover`)
 
-        const imageResponse = await fetch(`http://localhost/api/books/${result.id}/update-cover`, {
+        const imageResponse = await fetch(`http://localhost/api/books/${result.book.id}/update-cover`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -97,6 +100,7 @@ export const action: ActionFunction = async ({ request }) => {
 
         if (!imageResponse.ok) {
             const errors = await imageResponse.json();
+            console.log(Object.entries(errors))
             return json({ errors }, { status: imageResponse.status });
         }
     }

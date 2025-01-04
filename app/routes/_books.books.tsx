@@ -1,4 +1,4 @@
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import { useLoaderData, useSearchParams, Link } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
@@ -65,7 +65,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function Books() {
-    const {books, totalPages, currentPage } = useLoaderData<LoaderData>();
+    const { books, totalPages, currentPage } = useLoaderData<LoaderData>();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const handlePageChange = (page: number) => {
@@ -99,6 +99,10 @@ export default function Books() {
                                     <p className="mt-2 text-gray-600 dark:text-gray-300">
                                         Average Rating: {book.reviews.length > 0 ? (book.reviews.reduce((sum, review) => sum + review.rating, 0) / book.reviews.length).toFixed(1) : "No ratings yet"}
                                     </p>
+                                    <div className="mt-4 flex justify-between">
+                                        <Link to={`/books/${book.id}/review`} className="text-blue-500 hover:underline">Make Review</Link>
+                                        <Link to={`/books/${book.id}`} className="text-blue-500 hover:underline">Show Book</Link>
+                                    </div>
                                 </div>
                             ))}
                         </div>
