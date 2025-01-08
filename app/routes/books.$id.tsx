@@ -1,9 +1,9 @@
-import { useLoaderData, Form, useActionData, redirect } from "@remix-run/react";
+import { useLoaderData, Form, useActionData, redirect, useFetcher } from "@remix-run/react";
 import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 type LoaderData = {
     user: {
@@ -22,6 +22,7 @@ type LoaderData = {
             rating: number;
             review_text: string;
             user: {
+                id: number;
                 name: string;
                 profile_picture: string;
             };
@@ -29,6 +30,7 @@ type LoaderData = {
                 id: number;
                 comment: string;
                 user: {
+                    id: number;
                     name: string;
                     profile_picture: string;
                 };
@@ -70,40 +72,112 @@ export const loader: LoaderFunction = async ({ request, params }) => {
 export const action: ActionFunction = async ({ request, params }) => {
     const { user } = await requireAuth(request);
     const formData = await request.formData();
-    const comment = formData.get("comment");
+    const actionType = formData.get("actionType");
+    const id = formData.get("id");
     const reviewId = formData.get("review_id");
+    const comment = formData.get("comment");
+    const rating = formData.get("rating");
+    const reviewText = formData.get("review_text");
 
     const cookieHeader = request.headers.get("Cookie");
     const cookies = cookieHeader ? parse(cookieHeader) : {};
     const token = cookies.token;
 
-    const commentData = {
-        user_id: user.id,
-        review_id: reviewId,
-        comment,
-    };
+    if (actionType === "deleteReview") {
+        const response = await fetch(`http://localhost/api/reviews/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-    const response = await fetch(`http://localhost/api/comments`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(commentData),
-    });
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
 
-    if (!response.ok) {
-        const errors = await response.json();
-        return json({ errors }, { status: response.status });
+        return redirect(`/books/${params.id}`);
+    } else if (actionType === "deleteComment") {
+        const response = await fetch(`http://localhost/api/comments/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
+
+        return redirect(`/books/${params.id}`);
+    } else if (actionType === "updateReview") {
+        const response = await fetch(`http://localhost/api/reviews/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ rating, review_text: reviewText }),
+        });
+
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
+
+        return redirect(`/books/${params.id}`);
+    } else if (actionType === "updateComment") {
+        const response = await fetch(`http://localhost/api/comments/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ comment }),
+        });
+
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
+
+        return redirect(`/books/${params.id}`);
+    } else {
+        const commentData = {
+            user_id: user.id,
+            review_id: reviewId,
+            comment,
+        };
+
+        const response = await fetch(`http://localhost/api/comments`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(commentData),
+        });
+
+        if (!response.ok) {
+            const errors = await response.json();
+            return json({ errors }, { status: response.status });
+        }
+
+        return redirect(`/books/${params.id}`);
     }
-
-    return redirect(`/books/${params.id}`);
 };
 
 export default function ShowBook() {
-    const { book } = useLoaderData<LoaderData>();
+    const { book, user } = useLoaderData<LoaderData>();
     const actionData = useActionData();
+    const fetcher = useFetcher();
     const [showAllComments, setShowAllComments] = useState<{ [key: number]: boolean }>({});
+    const [selectedReview, setSelectedReview] = useState<{ id: number; rating: number; review_text: string } | null>(null);
+    const [selectedComment, setSelectedComment] = useState<{ id: number; comment: string } | null>(null);
+    const modalRef = useRef<HTMLDivElement>(null);
 
     const toggleShowAllComments = (reviewId: number) => {
         setShowAllComments((prev) => ({
@@ -111,6 +185,25 @@ export default function ShowBook() {
             [reviewId]: !prev[reviewId],
         }));
     };
+
+    const handleClickOutside = (event: MouseEvent) => {
+        if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+            setSelectedReview(null);
+            setSelectedComment(null);
+        }
+    };
+
+    useEffect(() => {
+        if (selectedReview || selectedComment) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [selectedReview, selectedComment]);
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
@@ -130,6 +223,16 @@ export default function ShowBook() {
                                     className="w-10 h-10 rounded-full"
                                 />
                                 <p className="ml-2 text-gray-800 dark:text-gray-100">{review.user.name}</p>
+                                {review.user.id === user.id && (
+                                    <div className="ml-auto flex space-x-2">
+                                        <button onClick={() => setSelectedReview({ id: review.id, rating: review.rating, review_text: review.review_text })} className="text-blue-500 hover:underline">Edit</button>
+                                        <fetcher.Form method="post">
+                                            <input type="hidden" name="id" value={review.id} />
+                                            <input type="hidden" name="actionType" value="deleteReview" />
+                                            <button type="submit" className="text-red-500 hover:underline">Delete</button>
+                                        </fetcher.Form>
+                                    </div>
+                                )}
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mb-2">Rating: {review.rating}⭐</p>
                             <p className="text-gray-800 dark:text-gray-100 mb-4">{review.review_text}</p>
@@ -143,6 +246,16 @@ export default function ShowBook() {
                                             className="w-8 h-8 rounded-full"
                                         />
                                         <p className="ml-2 text-gray-800 dark:text-gray-100">{comment.user.name}</p>
+                                        {comment.user.id === user.id && (
+                                            <div className="ml-auto flex space-x-2">
+                                                <button onClick={() => setSelectedComment({ id: comment.id, comment: comment.comment })} className="text-blue-500 hover:underline">Edit</button>
+                                                <fetcher.Form method="post">
+                                                    <input type="hidden" name="id" value={comment.id} />
+                                                    <input type="hidden" name="actionType" value="deleteComment" />
+                                                    <button type="submit" className="text-red-500 hover:underline">Delete</button>
+                                                </fetcher.Form>
+                                            </div>
+                                        )}
                                     </div>
                                     <p className="text-gray-800 dark:text-gray-100 mb-2">{comment.comment}</p>
                                     {Array.isArray(comment.replies) && comment.replies.map((reply) => (
@@ -198,6 +311,68 @@ export default function ShowBook() {
                     ))}
                 </div>
             </div>
+
+            {selectedReview && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div ref={modalRef} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Edit Review</h3>
+                        <fetcher.Form method="post" className="space-y-4">
+                            <input type="hidden" name="id" value={selectedReview.id} />
+                            <input type="hidden" name="actionType" value="updateReview" />
+                            <div>
+                                <label htmlFor="rating" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rating</label>
+                                <input
+                                    type="number"
+                                    id="rating"
+                                    name="rating"
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    defaultValue={selectedReview.rating}
+                                    min="1"
+                                    max="5"
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="review_text" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Review</label>
+                                <textarea
+                                    id="review_text"
+                                    name="review_text"
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    defaultValue={selectedReview.review_text}
+                                />
+                            </div>
+                            <div className="flex justify-end space-x-4">
+                                <button type="button" onClick={() => setSelectedReview(null)} className="px-4 py-2 bg-red-500 rounded-lg">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Save</button>
+                            </div>
+                        </fetcher.Form>
+                    </div>
+                </div>
+            )}
+
+            {selectedComment && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <div ref={modalRef} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Edit Comment</h3>
+                        <fetcher.Form method="post" className="space-y-4">
+                            <input type="hidden" name="id" value={selectedComment.id} />
+                            <input type="hidden" name="actionType" value="updateComment" />
+                            <div>
+                                <label htmlFor="comment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comment</label>
+                                <textarea
+                                    id="comment"
+                                    name="comment"
+                                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    defaultValue={selectedComment.comment}
+                                />
+                            </div>
+                            <div className="flex justify-end space-x-4">
+                                <button type="button" onClick={() => setSelectedComment(null)} className="px-4 py-2 bg-red-500 rounded-lg">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">Save</button>
+                            </div>
+                        </fetcher.Form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

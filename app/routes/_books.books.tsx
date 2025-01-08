@@ -83,7 +83,7 @@ export default function Books() {
                         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
                             {books.map((book) => (
                                 <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4">
-                                    <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-48 object-cover rounded-md" />
+                                    <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-80 object-cover rounded-md" />
                                     <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                                     <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>
                                     <p className="text-gray-600 dark:text-gray-300">Genre: {book.genre.name}</p>

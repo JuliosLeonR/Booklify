@@ -32,6 +32,8 @@ export const links: LinksFunction = () => [
 type LoaderData = {
   isAuthenticated: boolean;
   user: { profile_picture: string; name: string } | null;
+  token: string | null;
+
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -55,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.log("No token found");
   }
 
-  return json<LoaderData>({ isAuthenticated, user });
+  return json<LoaderData>({ isAuthenticated, user, token });
 };
 
 function Notification() {
@@ -75,8 +77,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const loaderData = useLoaderData<LoaderData>();
   const isAuthenticated = loaderData?.isAuthenticated ?? false;
   const user = loaderData?.user ?? null;
+  const token = loaderData?.token ?? null;
 
-  console.log("Loader data:", { isAuthenticated, user });
+
+  console.log("Loader data:", { isAuthenticated, user, token });
 
   return (
     <NotificationProvider>
@@ -88,7 +92,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Links />
         </head>
         <body>
-          {isAuthenticated && user && <Navbar user={user} />}
+          {isAuthenticated && user && <Navbar user={user} token={token} />}
           {children}
           <Notification />
           <ScrollRestoration />
