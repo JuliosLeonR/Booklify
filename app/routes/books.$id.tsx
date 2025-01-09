@@ -4,6 +4,7 @@ import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
 import { useState, useRef, useEffect } from "react";
+import ReportModal from "~/components/ReportModal";
 
 type LoaderData = {
     user: {
@@ -45,6 +46,7 @@ type LoaderData = {
             }[];
         }[];
     };
+    token: string;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -66,7 +68,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     const data = await response.json();
     const book = data.book;
 
-    return json<LoaderData>({ user, book });
+    return json<LoaderData>({ user, book, token });
 };
 
 export const action: ActionFunction = async ({ request, params }) => {
@@ -171,13 +173,16 @@ export const action: ActionFunction = async ({ request, params }) => {
 };
 
 export default function ShowBook() {
-    const { book, user } = useLoaderData<LoaderData>();
+    const { book, user, token } = useLoaderData<LoaderData>();
     const actionData = useActionData();
     const fetcher = useFetcher();
     const [showAllComments, setShowAllComments] = useState<{ [key: number]: boolean }>({});
     const [selectedReview, setSelectedReview] = useState<{ id: number; rating: number; review_text: string } | null>(null);
     const [selectedComment, setSelectedComment] = useState<{ id: number; comment: string } | null>(null);
     const modalRef = useRef<HTMLDivElement>(null);
+    const [reportModalVisible, setReportModalVisible] = useState(false);
+    const [reportableId, setReportableId] = useState<number | null>(null);
+    const [reportableType, setReportableType] = useState<string>("");
 
     const toggleShowAllComments = (reviewId: number) => {
         setShowAllComments((prev) => ({
@@ -204,6 +209,12 @@ export default function ShowBook() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [selectedReview, selectedComment]);
+
+    const handleReport = (id: number, type: string) => {
+        setReportableId(id);
+        setReportableType(type);
+        setReportModalVisible(true);
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
@@ -233,6 +244,7 @@ export default function ShowBook() {
                                         </fetcher.Form>
                                     </div>
                                 )}
+                                <button onClick={() => handleReport(review.id, "App\\Models\\Review")} className="ml-2 text-red-500 hover:underline">🚩</button>
                             </div>
                             <p className="text-gray-600 dark:text-gray-300 mb-2">Rating: {review.rating}⭐</p>
                             <p className="text-gray-800 dark:text-gray-100 mb-4">{review.review_text}</p>
@@ -256,6 +268,7 @@ export default function ShowBook() {
                                                 </fetcher.Form>
                                             </div>
                                         )}
+                                        <button onClick={() => handleReport(comment.id, "App\\Models\\Comment")} className="ml-2 text-red-500 hover:underline">🚩</button>
                                     </div>
                                     <p className="text-gray-800 dark:text-gray-100 mb-2">{comment.comment}</p>
                                     {Array.isArray(comment.replies) && comment.replies.map((reply) => (
@@ -373,6 +386,14 @@ export default function ShowBook() {
                     </div>
                 </div>
             )}
+
+            <ReportModal
+                show={reportModalVisible}
+                onClose={() => setReportModalVisible(false)}
+                reportableId={reportableId!}
+                reportableType={reportableType}
+                token={token}
+            />
         </div>
     );
 }

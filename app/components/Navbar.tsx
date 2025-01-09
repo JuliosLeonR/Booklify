@@ -79,14 +79,17 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
         </Link>
 
         <div className="hidden md:flex space-x-6">
-          <Link to="/users" className="hover:text-emerald-300">
-            Users
-          </Link>
           <Link to="/books" className="hover:text-emerald-300">
             Books
           </Link>
           <Link to="/add-book" className="hover:text-emerald-300">
             Add a Book
+          </Link>
+          <Link to="/users" className="hover:text-emerald-300">
+            Users
+          </Link>
+          <Link to="/rankings" className="hover:text-emerald-300">
+            Rankings🏆
           </Link>
         </div>
 
@@ -173,6 +176,12 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
                   My Reviews
+                </Link>
+                <Link
+                  to="/my-lists"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  My Lists
                 </Link>
                 <Form method="post" action="/logout">
                   <button
