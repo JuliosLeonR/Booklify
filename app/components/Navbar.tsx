@@ -82,6 +82,9 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
           <Link to="/books" className="hover:text-emerald-300">
             Books
           </Link>
+          <Link to="/for-you" className="hover:text-emerald-300">
+            For You
+          </Link>
           <Link to="/add-book" className="hover:text-emerald-300">
             Add a Book
           </Link>
@@ -160,12 +163,6 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
             {isOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-md shadow-lg z-30">
                 <Link
-                  to="/profile-settings"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                >
-                  Profile Settings
-                </Link>
-                <Link
                   to="/my-books"
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
@@ -182,6 +179,12 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
                   className="block px-4 py-2 hover:bg-gray-100"
                 >
                   My Lists
+                </Link>
+                <Link
+                  to="/profile-settings"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Profile Settings
                 </Link>
                 <Form method="post" action="/logout">
                   <button

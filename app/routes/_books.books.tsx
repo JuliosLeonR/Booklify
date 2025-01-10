@@ -168,18 +168,35 @@ export default function Books() {
     setReportModalVisible(true);
   };
 
+  const handlePreference = async (bookId: number, preference: string) => {
+    const response = await fetch('http://localhost/api/preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ book_id: bookId, preference }),
+    });
+
+    if (response.ok) {
+      setNotification({ message: `Book marked as ${preference}`, type: "success" });
+    } else {
+      setNotification({ message: "Failed to update preference", type: "error" });
+    }
+  };
+
   return (
     <div>
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
         <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
           <div className="p-6 sm:p-10">
-            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Books</h2>
-            <p className="text-center text-gray-800 dark:text-gray-100 font-bold">Here you can see all the books that have been uploaded by other users!</p>
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Books</h2>
+            <p className="text-center text-gray-800 dark:text-gray-100 font-bold mb-6">Explore the collection of books uploaded by other users!</p>
+            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {books.map((book) => (
-                <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4">
-<img src={book.cover_image.startsWith('http') ? book.cover_image : `http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-96 object-cover rounded-md" />                  
-<h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
+                <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
+                  <img src={book.cover_image.startsWith('http') ? book.cover_image : `http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-96 object-cover rounded-md" />
+                  <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                   <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>
                   <p className="text-gray-600 dark:text-gray-300">Genre: {book.genre.name}</p>
                   <p className="mt-2 text-gray-800 dark:text-gray-100">{book.description}</p>
@@ -199,6 +216,18 @@ export default function Books() {
                     <Link to={`/books/${book.id}`} className="text-blue-500 hover:underline">Show Book</Link>
                     <button onClick={() => handleAddToList(book)} className="text-green-500 hover:underline">+ Add to List</button>
                     <button onClick={() => handleReport(book.id, "App\\Models\\Book")} className="text-red-500 hover:underline">🚩</button>
+                  </div>
+                  <div className="mt-4 flex justify-between">
+                    <button onClick={() => handlePreference(book.id, 'interested')} className="text-blue-500 hover:underline">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                    <button onClick={() => handlePreference(book.id, 'not_interested')} className="text-red-500 hover:underline">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
