@@ -15,11 +15,23 @@ type FriendRequest = {
   };
 };
 
+type Notification = {
+  id: number;
+  type: string;
+  data: {
+    message: string;
+    [key: string]: any;
+  };
+  read: boolean;
+};
+
 export default function Navbar({ user, token }: { user: User, token: string | null }) {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isHamburgerMenuOpen, setIsHamburgerMenuOpen] = useState(false);
   const [isNotificationsMenuOpen, setIsNotificationsMenuOpen] = useState(false);
+  const [isMessagesMenuOpen, setIsMessagesMenuOpen] = useState(false);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     async function fetchFriendRequests() {
@@ -46,7 +58,32 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
       }
     }
 
+    async function fetchNotifications() {
+      if (!token) {
+        console.log("No token found");
+        return;
+      }
+
+      try {
+        const response = await fetch("http://localhost/api/notifications", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data.notifications);
+        } else {
+          console.error("Failed to fetch notifications:", response.status);
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    }
+
     fetchFriendRequests();
+    fetchNotifications();
   }, [token]);
 
   const handleFriendRequest = async (id: number, status: string) => {
@@ -72,35 +109,70 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
     }
   };
 
+  const markNotificationAsRead = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost/api/notifications/${id}/read`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        setNotifications((prevNotifications) =>
+          prevNotifications.map((notification) =>
+            notification.id === id ? { ...notification, read: true } : notification
+          )
+        );
+      } else {
+        console.error("Failed to mark notification as read:", response.status);
+      }
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen((prev) => !prev);
     if (!isProfileMenuOpen) {
-      setIsHamburgerMenuOpen(false); // Close hamburguer menu
+      setIsHamburgerMenuOpen(false); // Close hamburger menu
       setIsNotificationsMenuOpen(false); // Close notification menu
+      setIsMessagesMenuOpen(false); // Close messages menu
     }
   };
-  
+
   const toggleHamburgerMenu = () => {
     setIsHamburgerMenuOpen((prev) => !prev);
     if (!isHamburgerMenuOpen) {
       setIsProfileMenuOpen(false); // Close profile menu
       setIsNotificationsMenuOpen(false); // Close notification menu
+      setIsMessagesMenuOpen(false); // Close messages menu
     }
   };
-  
+
   const toggleNotificationsMenu = () => {
     setIsNotificationsMenuOpen((prev) => !prev);
     if (!isNotificationsMenuOpen) {
       setIsProfileMenuOpen(false); // Close profile menu
-      setIsHamburgerMenuOpen(false); // Close hamburguer menu
+      setIsHamburgerMenuOpen(false); // Close hamburger menu
+      setIsMessagesMenuOpen(false); // Close messages menu
     }
   };
-  
+
+  const toggleMessagesMenu = () => {
+    setIsMessagesMenuOpen((prev) => !prev);
+    if (!isMessagesMenuOpen) {
+      setIsProfileMenuOpen(false); // Close profile menu
+      setIsHamburgerMenuOpen(false); // Close hamburger menu
+      setIsNotificationsMenuOpen(false); // Close notification menu
+    }
+  };
 
   return (
     <nav className="bg-gray-900 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-2xl font-bold text-emerald-400">
+        <Link to="/dashboard" className="text-2xl font-bold text-emerald-400">
           Booklify
         </Link>
 
@@ -169,6 +241,47 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
                     ))
                   ) : (
                     <p className="text-center text-gray-500">No requests</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative">
+            <button
+              className="relative focus:outline-none"
+              onClick={toggleMessagesMenu}
+            >
+              <span className="text-2xl">&#9993;</span>
+              {notifications.some((notification) => !notification.read) && (
+                <span className="absolute top-0 right-0 inline-block w-3 h-3 bg-red-600 rounded-full"></span>
+              )}
+            </button>
+            {isMessagesMenuOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-white text-gray-800 rounded-md shadow-lg z-30">
+                <div className="p-2">
+                  <h3 className="text-lg font-semibold border-b pb-2 mb-2">
+                    Messages
+                  </h3>
+                  {notifications.length > 0 ? (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification.id}
+                        className={`flex items-center p-2 hover:bg-gray-100 rounded-md ${notification.read ? 'bg-gray-200' : ''}`}
+                      >
+                        <p className="ml-3 flex-1">{notification.data.message}</p>
+                        {!notification.read && (
+                          <button
+                            onClick={() => markNotificationAsRead(notification.id)}
+                            className="text-blue-500 hover:underline"
+                          >
+                            Mark as read
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500">No messages</p>
                   )}
                 </div>
               </div>
