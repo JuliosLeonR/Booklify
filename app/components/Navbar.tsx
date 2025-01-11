@@ -16,8 +16,9 @@ type FriendRequest = {
 };
 
 export default function Navbar({ user, token }: { user: User, token: string | null }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isHamburgerMenuOpen, setIsHamburgerMenuOpen] = useState(false);
+  const [isNotificationsMenuOpen, setIsNotificationsMenuOpen] = useState(false);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
 
   useEffect(() => {
@@ -71,6 +72,31 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
     }
   };
 
+  const toggleProfileMenu = () => {
+    setIsProfileMenuOpen((prev) => !prev);
+    if (!isProfileMenuOpen) {
+      setIsHamburgerMenuOpen(false); // Close hamburguer menu
+      setIsNotificationsMenuOpen(false); // Close notification menu
+    }
+  };
+  
+  const toggleHamburgerMenu = () => {
+    setIsHamburgerMenuOpen((prev) => !prev);
+    if (!isHamburgerMenuOpen) {
+      setIsProfileMenuOpen(false); // Close profile menu
+      setIsNotificationsMenuOpen(false); // Close notification menu
+    }
+  };
+  
+  const toggleNotificationsMenu = () => {
+    setIsNotificationsMenuOpen((prev) => !prev);
+    if (!isNotificationsMenuOpen) {
+      setIsProfileMenuOpen(false); // Close profile menu
+      setIsHamburgerMenuOpen(false); // Close hamburguer menu
+    }
+  };
+  
+
   return (
     <nav className="bg-gray-900 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -100,14 +126,14 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
           <div className="relative">
             <button
               className="relative focus:outline-none"
-              onClick={() => setMenuOpen(!menuOpen)}
+              onClick={toggleNotificationsMenu}
             >
               <span className="text-2xl">&#128276;</span>
               {friendRequests.length > 0 && (
                 <span className="absolute top-0 right-0 inline-block w-3 h-3 bg-red-600 rounded-full"></span>
               )}
             </button>
-            {menuOpen && (
+            {isNotificationsMenuOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white text-gray-800 rounded-md shadow-lg z-30">
                 <div className="p-2">
                   <h3 className="text-lg font-semibold border-b pb-2 mb-2">
@@ -151,7 +177,7 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
 
           <div className="relative">
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={toggleProfileMenu}
               className="focus:outline-none"
             >
               <img
@@ -160,8 +186,14 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
                 className="w-10 h-10 rounded-full border-2 border-emerald-400"
               />
             </button>
-            {isOpen && (
+            {isProfileMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-md shadow-lg z-30">
+                <Link
+                  to="/my-profile"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  My Profile
+                </Link>
                 <Link
                   to="/my-books"
                   className="block px-4 py-2 hover:bg-gray-100"
@@ -197,17 +229,17 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
               </div>
             )}
           </div>
-        </div>
 
-        <button
-          className="md:hidden focus:outline-none"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <span className="text-2xl">&#9776;</span>
-        </button>
+          <button
+            className="md:hidden focus:outline-none"
+            onClick={toggleHamburgerMenu}
+          >
+            <span className="text-2xl">&#9776;</span>
+          </button>
+        </div>
       </div>
 
-      {isOpen && (
+      {isHamburgerMenuOpen && (
         <div className="md:hidden bg-gray-800 px-4 py-2">
           <Link to="/users" className="block py-2 hover:text-emerald-300">
             Users
@@ -217,6 +249,12 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
           </Link>
           <Link to="/add-book" className="block py-2 hover:text-emerald-300">
             Add a Book
+          </Link>
+          <Link to="/for-you" className="block py-2 hover:text-emerald-300">
+            For You
+          </Link>
+          <Link to="/rankings" className="block py-2 hover:text-emerald-300">
+            Rankings🏆
           </Link>
         </div>
       )}

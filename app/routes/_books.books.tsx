@@ -6,6 +6,8 @@ import { parse } from "cookie";
 import { useState, useRef, useEffect } from "react";
 import { useNotification } from "~/context/NotificationContext";
 import ReportModal from "~/components/ReportModal";
+import BookSearch from '~/components/BookSearch';
+
 
 type Book = {
   id: number;
@@ -192,6 +194,7 @@ export default function Books() {
           <div className="p-6 sm:p-10">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Books</h2>
             <p className="text-center text-gray-800 dark:text-gray-100 font-bold mb-6">Explore the collection of books uploaded by other users!</p>
+            <BookSearch token={token} />
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {books.map((book) => (
                 <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
