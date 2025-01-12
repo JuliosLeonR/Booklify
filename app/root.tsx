@@ -16,6 +16,8 @@ import { NotificationProvider, useNotification } from "~/context/NotificationCon
 import Navbar from "~/components/Navbar";
 import AdminNavbar from "~/components/AdminNavbar";
 import { requireAuth } from "~/components/Auth";
+import ErrorBoundary from "~/components/ErrorBoundary";
+
 
 export const links: LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -106,8 +108,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Links />
         </head>
         <body>
+        <ErrorBoundary>
           {isAuthenticated && user && (isAdmin ? <AdminNavbar user={user} token={token} /> : <Navbar user={user} token={token} />)}
           {children}
+          </ErrorBoundary>
+
           <Notification />
           <ScrollRestoration />
           <Scripts />
