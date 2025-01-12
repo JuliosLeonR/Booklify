@@ -61,6 +61,9 @@ export default function AdminNavbar({ user, token }: { user: User, token: string
           <Link to="/admin/comments" className="hover:text-emerald-300">
             Manage Comments
           </Link>
+          <Link to="/admin/analytics" className="hover:text-emerald-300">
+            Analytics
+          </Link>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -148,6 +151,9 @@ export default function AdminNavbar({ user, token }: { user: User, token: string
           </Link>
           <Link to="/admin/reviews" className="block py-2 hover:text-emerald-300">
             Manage Comments
+          </Link>
+          <Link to="/admin/reviews" className="block py-2 hover:text-emerald-300">
+            Analytics
           </Link>
         </div>
       )}
