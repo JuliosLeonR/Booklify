@@ -10,11 +10,11 @@ import type { LinksFunction, LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { parse } from "cookie";
 
-
 import "./tailwind.css";
 
 import { NotificationProvider, useNotification } from "~/context/NotificationContext";
 import Navbar from "~/components/Navbar";
+import AdminNavbar from "~/components/AdminNavbar";
 import { requireAuth } from "~/components/Auth";
 
 export const links: LinksFunction = () => [
@@ -34,7 +34,7 @@ type LoaderData = {
   isAuthenticated: boolean;
   user: { profile_picture: string; name: string } | null;
   token: string | null;
-
+  isAdmin: boolean;
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -44,12 +44,25 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   let user = null;
   let isAuthenticated = false;
+  let isAdmin = false;
 
   if (token) {
     try {
       const authData = await requireAuth(request);
       user = authData.user;
       isAuthenticated = true;
+
+      const adminResponse = await fetch("http://localhost/api/user/is-admin", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (adminResponse.ok) {
+        const adminData = await adminResponse.json();
+        isAdmin = adminData.is_admin === 1;
+      }
+
       console.log("User data fetched:", user);
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -58,7 +71,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     console.log("No token found");
   }
 
-  return json<LoaderData>({ isAuthenticated, user, token });
+  return json<LoaderData>({ isAuthenticated, user, token, isAdmin });
 };
 
 function Notification() {
@@ -79,9 +92,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const isAuthenticated = loaderData?.isAuthenticated ?? false;
   const user = loaderData?.user ?? null;
   const token = loaderData?.token ?? null;
+  const isAdmin = loaderData?.isAdmin ?? false;
 
-
-  console.log("Loader data:", { isAuthenticated, user, token });
+  console.log("Loader data:", { isAuthenticated, user, token, isAdmin });
 
   return (
     <NotificationProvider>
@@ -93,7 +106,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Links />
         </head>
         <body>
-          {isAuthenticated && user && <Navbar user={user} token={token} />}
+          {isAuthenticated && user && (isAdmin ? <AdminNavbar user={user} token={token} /> : <Navbar user={user} token={token} />)}
           {children}
           <Notification />
           <ScrollRestoration />
