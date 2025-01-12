@@ -1,5 +1,7 @@
 import { Form, Link } from "@remix-run/react";
 import { useState, useEffect } from "react";
+import DarkModeToggle from "./DarkModeToggle";
+
 
 type User = {
   profile_picture: string;
@@ -195,6 +197,7 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
         </div>
 
         <div className="flex items-center space-x-4">
+        <DarkModeToggle />
           <div className="relative">
             <button
               className="relative focus:outline-none"

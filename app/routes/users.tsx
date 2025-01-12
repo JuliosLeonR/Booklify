@@ -109,8 +109,8 @@ export default function Users() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
-      <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+      <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
         <div className="p-6 sm:p-10">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Users</h2>
           <div className="mb-6">
@@ -124,7 +124,7 @@ export default function Users() {
           </div>
           <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
             {filteredUsers.map((user) => (
-              <div key={user.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 flex flex-col items-center">
+              <div key={user.id} className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md p-4 flex flex-col items-center">
                 <img src={user.profile_picture.startsWith('http') ? user.profile_picture : `http://localhost/storage/${user.profile_picture}`} alt={user.name} className="max-w-full h-48 object-cover rounded-full" />
                 <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{user.name}</h3>
                 <p className="text-gray-600 dark:text-gray-300">@{user.username}</p>

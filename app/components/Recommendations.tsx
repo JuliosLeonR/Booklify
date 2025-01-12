@@ -61,7 +61,7 @@ const Recommendations: React.FC<RecommendationsProps> = ({ token }) => {
         <div>
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {recommendedBooks.map((book) => (
-                    <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
+                    <div key={book.id} className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
                         <img src={book.cover_image.startsWith('http') ? book.cover_image : `http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-96 object-cover rounded-md" />
                         <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                         <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>

@@ -136,7 +136,7 @@ export default function UserDetails() {
           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Books</h3>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {user.books.map((book) => (
-              <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4">
+              <div key={book.id} className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md p-4">
                 <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-80 object-cover rounded-md" />
                 <h4 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h4>
               </div>
@@ -145,7 +145,7 @@ export default function UserDetails() {
           <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mt-6 mb-4">Reviews</h3>
           <div className="space-y-4">
             {user.reviews.map((review) => (
-              <div key={review.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4">
+              <div key={review.id} className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md p-4">
                 <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100">{review.book.title}</h4>
                 <p className="text-gray-600 dark:text-gray-300">Rating: {review.rating}⭐</p>
                 <p className="mt-2 text-gray-800 dark:text-gray-100">{review.review_text}</p>

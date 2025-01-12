@@ -122,8 +122,8 @@ export default function AddBook() {
     }, [actionData, setNotification]);
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
-            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="min-h-screen bg-gray-200 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+            <div className="max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
                 <div className="p-6 sm:p-10">
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Add a New Book</h2>
                     <Form method="post" encType="multipart/form-data" className="space-y-4">

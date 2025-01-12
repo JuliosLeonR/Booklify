@@ -189,15 +189,15 @@ export default function Books() {
 
   return (
     <div>
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
-        <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div className="min-h-screen bg-gray-300 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+        <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
           <div className="p-6 sm:p-10">
             <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">Books</h2>
             <p className="text-center text-gray-800 dark:text-gray-100 font-bold mb-6">Explore the collection of books uploaded by other users!</p>
             <BookSearch token={token} />
             <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {books.map((book) => (
-                <div key={book.id} className="bg-white dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
+                <div key={book.id} className="bg-gray-200 dark:bg-gray-700 rounded-lg shadow-md p-4 transition transform hover:scale-105">
                   <img src={book.cover_image.startsWith('http') ? book.cover_image : `http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full h-96 object-cover rounded-md" />
                   <h3 className="mt-4 text-lg font-bold text-gray-800 dark:text-gray-100">{book.title}</h3>
                   <p className="text-gray-600 dark:text-gray-300">by {book.author}</p>

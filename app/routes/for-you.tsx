@@ -23,8 +23,8 @@ export default function ForYou() {
     const { token } = useLoaderData<LoaderData>();
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
-            <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="min-h-screen bg-gray-200 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+            <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
                 <div className="p-6 sm:p-10">
                     <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 text-center">For You</h2>
                     <p className="text-center text-gray-800 dark:text-gray-100 font-bold mb-6">Discover books recommended just for you!</p>

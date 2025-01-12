@@ -217,8 +217,8 @@ export default function ShowBook() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
-            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md">
+        <div className="min-h-screen bg-gray-200 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
+            <div className="max-w-4xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
                 <div className="p-6 sm:p-10">
                     <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">{book.title}</h2>
                     <img src={`http://localhost/storage/${book.cover_image}`} alt={book.title} className="w-full max-h-svh object-cover rounded-md mb-6" />
@@ -226,7 +226,7 @@ export default function ShowBook() {
                     <p className="text-gray-800 dark:text-gray-100 mb-6">{book.description}</p>
                     <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reviews</h3>
                     {book.reviews.map((review) => (
-                        <div key={review.id} className="mb-6 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                        <div key={review.id} className="mb-6 p-4 bg-gray-200 dark:bg-gray-700 rounded-lg">
                             <div className="flex items-center mb-2">
                                 <img
                                     src={`http://localhost/storage/${review.user.profile_picture}`}
@@ -250,7 +250,7 @@ export default function ShowBook() {
                             <p className="text-gray-800 dark:text-gray-100 mb-4">{review.review_text}</p>
                             <h4 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-2">Comments</h4>
                             {Array.isArray(review.comments) && review.comments.slice(0, showAllComments[review.id] ? review.comments.length : 2).map((comment) => (
-                                <div key={comment.id} className="mb-4 ml-4 p-2 bg-gray-200 dark:bg-gray-600 rounded-lg">
+                                <div key={comment.id} className="mb-4 ml-4 p-2 bg-gray-300 dark:bg-gray-600 rounded-lg">
                                     <div className="flex items-center mb-2">
                                         <img
                                             src={`http://localhost/storage/${comment.user.profile_picture}`}
