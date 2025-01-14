@@ -1,6 +1,14 @@
-import { Link } from "@remix-run/react";
+import { LoaderFunction } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import { requireAdmin } from "~/utils/requireAdmin";
+
+export const loader: LoaderFunction = async (args) => {
+  await requireAdmin(args);
+  return null;
+};
 
 export default function AdminDashboard() {
+  const data = useLoaderData();
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 py-10 px-5 sm:px-10">
       <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">

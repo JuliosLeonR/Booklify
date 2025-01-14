@@ -4,6 +4,7 @@ import { Chart, registerables } from "chart.js";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
+import { requireAdmin } from "~/utils/requireAdmin";
 
 Chart.register(...registerables);
 
@@ -12,6 +13,7 @@ type LoaderData = {
 };
 
 export const loader = async ({ request }) => {
+  await requireAdmin({ request });
   const { user } = await requireAuth(request);
   const cookieHeader = request.headers.get("Cookie");
   const cookies = cookieHeader ? parse(cookieHeader) : {};

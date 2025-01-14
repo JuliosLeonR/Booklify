@@ -185,7 +185,7 @@ export default function ManageBooks() {
                         <button onClick={() => handleEditClick(book)} className="text-blue-500 hover:underline">
                           <PencilSquareIcon className="w-5 h-5" />
                         </button>
-                        <Link to={`/admin/books/${book.id}`} className="text-green-500 hover:underline">
+                        <Link to={`/admin/show-book/${book.id}`} className="text-green-500 hover:underline">
                           <EyeIcon className="w-5 h-5" />
                         </Link>
                         <button onClick={() => handleDeleteClick(book.id)} className="text-red-500 hover:underline">
