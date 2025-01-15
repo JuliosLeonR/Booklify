@@ -3,6 +3,7 @@ import type { LoaderFunction, ActionFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
+import { requireAdmin } from "~/utils/requireAdmin";
 
 type Report = {
   id: number;
@@ -21,6 +22,7 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
+  await requireAdmin({ request });
   const { user } = await requireAuth(request);
   const cookieHeader = request.headers.get("Cookie");
   const cookies = cookieHeader ? parse(cookieHeader) : {};

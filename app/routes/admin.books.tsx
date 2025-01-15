@@ -7,6 +7,7 @@ import { parse } from "cookie";
 import Modal from "~/components/Modal";
 import { useNotification } from "~/context/NotificationContext";
 import { PencilSquareIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid";
+import { requireAdmin } from "~/utils/requireAdmin";
 
 type Book = {
   id: number;
@@ -22,6 +23,7 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request }) => {
+  await requireAdmin({ request });
   const { user } = await requireAuth(request);
   const cookieHeader = request.headers.get("Cookie");
   const cookies = cookieHeader ? parse(cookieHeader) : {};
