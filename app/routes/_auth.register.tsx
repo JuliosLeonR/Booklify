@@ -3,6 +3,13 @@ import type { ActionFunction } from "@remix-run/node";
 import { useNotification } from "~/context/NotificationContext";
 import { useEffect } from "react";
 
+export const meta: MetaFunction = () => {
+    return [
+      { title: "Booklify - Register" },
+      { name: "description", content: "Cretae your account at Booklify!" },
+    ];
+  };
+
 export const action: ActionFunction = async ({ request }) => {
     const formData = await request.formData();
     const name = formData.get("name");

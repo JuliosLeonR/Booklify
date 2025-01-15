@@ -9,6 +9,14 @@ import ReportModal from "~/components/ReportModal";
 import BookSearch from '~/components/BookSearch';
 
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Booklify - Discover and Share Books" },
+    { name: "description", content: "Discover and share your favorite books with Booklify." },
+  ];
+};
+
+
 type Book = {
   id: number;
   title: string;
@@ -188,7 +196,8 @@ export default function Books() {
   };
 
   return (
-    <div>
+    
+    <div> 
       <div className="min-h-screen bg-gray-300 dark:bg-gray-900 py-10 px-5 sm:px-10 mt-4">
         <div className="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-800 rounded-lg shadow-md">
           <div className="p-6 sm:p-10">

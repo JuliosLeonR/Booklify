@@ -6,6 +6,13 @@ import { parse } from "cookie";
 import { useState, useRef, useEffect } from "react";
 import { useNotification } from "~/context/NotificationContext";
 
+export const meta: MetaFunction = () => {
+    return [
+      { title: "Booklify - My Lists" },
+      { name: "description", content: "Discover and share your favorite lists with Booklify." },
+    ];
+  };
+
 type List = {
     id: number;
     name: string;

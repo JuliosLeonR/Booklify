@@ -6,6 +6,13 @@ import { parse } from "cookie";
 import { useState } from "react";
 import FriendsModal from "~/components/FriendsModal";
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Booklify - My Profile" },
+    { name: "description", content: "View your profile!" },
+  ];
+};
+
 type User = {
   id: number;
   profile_picture: string;

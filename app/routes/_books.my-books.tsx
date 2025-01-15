@@ -5,6 +5,13 @@ import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
 import { useState, useRef, useEffect } from "react";
 
+export const meta: MetaFunction = () => {
+    return [
+      { title: "Booklify - My Books" },
+      { name: "description", content: "Discover and share your favorite books with Booklify." },
+    ];
+  };
+
 type Book = {
     id: number;
     title: string;

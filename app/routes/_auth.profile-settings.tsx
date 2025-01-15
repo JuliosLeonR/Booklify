@@ -17,6 +17,13 @@ type LoaderData = {
   token: string;
 };
 
+export const meta: MetaFunction = () => {
+  return [
+    { title: "Booklify - Profile Settings" },
+    { name: "description", content: "Update your profile!" },
+  ];
+};
+
 export const loader: LoaderFunction = async ({ request }) => {
   const { user } = await requireAuth(request);
 
