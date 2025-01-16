@@ -5,7 +5,6 @@ import { requireAuth } from "~/components/Auth";
 import { parse } from "cookie";
 import { useState, useRef, useEffect } from "react";
 import ReportModal from "~/components/ReportModal";
-import { requireAdmin } from "~/utils/requireAdmin";
 
 
 type LoaderData = {
@@ -52,7 +51,6 @@ type LoaderData = {
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
-    await requireAdmin({ request });
     const { user } = await requireAuth(request);
     const cookieHeader = request.headers.get("Cookie");
     const cookies = cookieHeader ? parse(cookieHeader) : {};
