@@ -14,24 +14,24 @@ export default function AdminNavbar({ user, token }: { user: User, token: string
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen((prev) => !prev);
     if (!isProfileMenuOpen) {
-      setIsHamburgerMenuOpen(false); // Close hamburger menu
-      setIsNotificationsMenuOpen(false); // Close notification menu
+      setIsHamburgerMenuOpen(false); 
+      setIsNotificationsMenuOpen(false); 
     }
   };
 
   const toggleHamburgerMenu = () => {
     setIsHamburgerMenuOpen((prev) => !prev);
     if (!isHamburgerMenuOpen) {
-      setIsProfileMenuOpen(false); // Close profile menu
-      setIsNotificationsMenuOpen(false); // Close notification menu
+      setIsProfileMenuOpen(false);
+      setIsNotificationsMenuOpen(false); 
     }
   };
 
   const toggleNotificationsMenu = () => {
     setIsNotificationsMenuOpen((prev) => !prev);
     if (!isNotificationsMenuOpen) {
-      setIsProfileMenuOpen(false); // Close profile menu
-      setIsHamburgerMenuOpen(false); // Close hamburger menu
+      setIsProfileMenuOpen(false); 
+      setIsHamburgerMenuOpen(false); 
     }
   };
 

@@ -194,7 +194,7 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
           <Link to="/rankings" className="hover:text-emerald-300">
             Rankings🏆
           </Link>
-          <Link to="/search-open-library.tsx" className="hover:text-emerald-300">
+          <Link to="/search-open-library" className="hover:text-emerald-300">
             OpenLibrary📖
           </Link>
         </div>
@@ -375,7 +375,7 @@ export default function Navbar({ user, token }: { user: User, token: string | nu
           <Link to="/rankings" className="block py-2 hover:text-emerald-300">
             Rankings🏆
           </Link>
-          <Link to="/search-open-library.tsx" className="block py-2 hover:text-emerald-300">
+          <Link to="/search-open-library" className="block py-2 hover:text-emerald-300">
             OpenLibrary📖
           </Link>
         </div>
